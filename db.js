@@ -39,4 +39,19 @@ const catalogPublishSchema = new mongoose.Schema(
 
 const CatalogPublish = mongoose.model("CatalogPublish", catalogPublishSchema);
 
-module.exports = { connectDB, CatalogPublish };
+// Schema — stores confirmed orders
+// { orderId: String, data: Object (full on_confirm payload) }
+const orderSchema = new mongoose.Schema(
+  {
+    orderId: { type: String, required: true, unique: true },
+    data:    { type: mongoose.Schema.Types.Mixed, required: true },
+  },
+  {
+    timestamps: true,
+    collection: "orders",
+  },
+);
+
+const Order = mongoose.model("Order", orderSchema);
+
+module.exports = { connectDB, CatalogPublish, Order };

@@ -3,7 +3,7 @@
 const path = require("path");
 const express = require("express");
 const axios = require("axios");
-const { connectDB, CatalogPublish } = require("./db");
+const { connectDB, CatalogPublish, Order } = require("./db");
 const { handleSelect } = require("./handlers/select");
 const { handleInit }    = require("./handlers/init");
 const { handleConfirm } = require("./handlers/confirm");
@@ -150,6 +150,15 @@ app.post("/confirm", async (req, res) => {
   } catch (err) {
     console.error("[confirm] handleConfirm failed:", err.message);
     return;
+  }
+
+  // Save order to DB before firing callback
+  const orderId = payload.message?.contract?.id;
+  try {
+    await Order.create({ orderId, data: payload });
+    console.log(`[confirm] order saved orderId=${orderId}`);
+  } catch (err) {
+    console.error("[confirm] failed to save order:", err.message);
   }
 
   await delay(2000);
