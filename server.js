@@ -3,6 +3,7 @@
 const path = require("path");
 const express = require("express");
 const axios = require("axios");
+const { connectDB, CatalogPublish } = require("./db");
 
 const app = express();
 app.use(express.json());
@@ -96,6 +97,23 @@ app.post("/status", makeHandler("status"));
 app.post("/track", makeHandler("track"));
 
 // ---------------------------------------------------------------------------
+// Catalog endpoints
+// ---------------------------------------------------------------------------
+app.post("/catalog/publish", async (req, res) => {
+  console.log("\n[catalog/publish] request payload:");
+  console.log(JSON.stringify(req.body, null, 2));
+
+  try {
+    const doc = await CatalogPublish.create(req.body);
+    console.log(`[catalog/publish] stored document id=${doc._id}`);
+    res.status(200).json({ message: { ack: { status: "ACK" } }, id: doc._id });
+  } catch (err) {
+    console.error("[catalog/publish] failed to store:", err.message);
+    res.status(500).json({ message: { ack: { status: "NACK" } }, error: err.message });
+  }
+});
+
+// ---------------------------------------------------------------------------
 // Health check
 // ---------------------------------------------------------------------------
 app.get("/health", (_req, res) =>
@@ -109,9 +127,16 @@ app.get("/health", (_req, res) =>
 // ---------------------------------------------------------------------------
 // Start
 // ---------------------------------------------------------------------------
-app.listen(PORT, () => {
-  console.log(`bpp-fnb-app  : http://0.0.0.0:${PORT}`);
-  console.log(
-    `Endpoints    : POST /select  /init  /confirm  /status  /track  GET /health`,
-  );
-});
+connectDB()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`bpp-fnb-app  : http://0.0.0.0:${PORT}`);
+      console.log(
+        `Endpoints    : POST /select  /init  /confirm  /status  /track  POST /catalog/publish  GET /health`,
+      );
+    });
+  })
+  .catch((err) => {
+    console.error("[startup] MongoDB connection failed:", err.message);
+    process.exit(1);
+  });
