@@ -303,6 +303,43 @@ app.get("/orders", async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
+// Dashboard endpoint
+// ---------------------------------------------------------------------------
+app.get("/dashboard", async (req, res) => {
+  try {
+    const [
+      productAgg,
+      totalOrders,
+      confirmedOrders,
+      enRouteOrders,
+      deliveredOrders,
+    ] = await Promise.all([
+      CatalogPublish.aggregate([
+        { $project: { itemCount: { $size: { $ifNull: ["$items", []] } } } },
+        { $group: { _id: null, total: { $sum: "$itemCount" } } },
+      ]),
+      Order.countDocuments(),
+      Order.countDocuments({ status: "CONFIRMED" }),
+      Order.countDocuments({ status: "EN_ROUTE" }),
+      Order.countDocuments({ status: "DELIVERED" }),
+    ]);
+
+    const totalProducts = productAgg[0]?.total ?? 0;
+
+    res.json({
+      totalProducts,
+      totalOrders,
+      confirmedOrders,
+      enRouteOrders,
+      deliveredOrders,
+    });
+  } catch (err) {
+    console.error("[dashboard] failed:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------------------------------------------------------------------------
 // Health check
 // ---------------------------------------------------------------------------
 app.get("/health", (_req, res) =>
