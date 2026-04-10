@@ -1,0 +1,342 @@
+openapi: 3.1.0
+info:
+  title: BPP FnB App — Provider API
+  version: 1.0.0
+  description: API for registering or updating a food-and-beverage provider (store/restaurant) on the BPP.
+
+servers:
+  - url: http://localhost:4001
+    description: Local development server
+
+paths:
+  /provider/add:
+    post:
+      summary: Add or update a provider
+      description: >
+        Creates a new provider document or updates an existing one (upsert by `providerId`).
+        Returns ACK on success, NACK with an error message on failure.
+      operationId: addProvider
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProviderRequest'
+            example:
+              providerId: provider-test-001
+              name: Spice Garden Kitchen
+              shortDesc: Home-style Indian food delivery
+              city: "ONDC:std:city:Bangalore"
+              bppId: tsp.nearshop.in
+              bppUri: http://onix-bpp:8082/bpp/receiver
+              catalogId: catalog-spice-garden-001
+              catalogName: Spice Garden Menu
+              validity:
+                startDate: "2025-01-01T00:00:00Z"
+                endDate: "2025-12-31T23:59:59Z"
+              packingCharge: 20
+              deliveryCharge: 40
+              gstRate: 0.05
+              currency: INR
+              serviceability:
+                maxDistance: 10
+                unit: KM
+                timing:
+                  - daysOfWeek: [MON, TUE, WED, THU, FRI, SAT, SUN]
+                    timeRange:
+                      start: "09:00"
+                      end: "22:00"
+              policies:
+                returns:
+                  allowed: false
+                cancellation:
+                  allowed: true
+                  window: PT1H
+                  cutoffEvent: BEFORE_PACKING
+              paymentConstraints:
+                codAvailable: true
+                paymentMethods: [COD, UPI, PREPAID]
+              isActive: true
+      responses:
+        '201':
+          description: Provider created or updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AckResponse'
+              example:
+                message:
+                  ack:
+                    status: ACK
+                providerId: provider-test-001
+        '400':
+          description: Validation error or bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NackResponse'
+              example:
+                message:
+                  ack:
+                    status: NACK
+                error: "providers validation failed: packingCharge: Path `packingCharge` is required."
+
+components:
+  schemas:
+
+    ProviderRequest:
+      type: object
+      required:
+        - providerId
+        - name
+        - shortDesc
+        - city
+        - bppId
+        - bppUri
+        - catalogId
+        - catalogName
+        - validity
+        - packingCharge
+        - deliveryCharge
+        - gstRate
+        - serviceability
+        - isActive
+      properties:
+
+        providerId:
+          type: string
+          description: Unique identifier for the provider. Used as the upsert key.
+          example: provider-test-001
+
+        name:
+          type: string
+          description: Display name of the store or restaurant.
+          example: Spice Garden Kitchen
+
+        shortDesc:
+          type: string
+          description: Short human-readable description of the provider.
+          example: Home-style Indian food delivery
+
+        city:
+          type: string
+          description: ONDC standard city code.
+          example: "ONDC:std:city:Bangalore"
+
+        bppId:
+          type: string
+          description: BPP subscriber ID.
+          example: tsp.nearshop.in
+
+        bppUri:
+          type: string
+          format: uri
+          description: BPP receiver endpoint URI.
+          example: http://onix-bpp:8082/bpp/receiver
+
+        catalogId:
+          type: string
+          description: Identifier for the catalog this provider publishes under.
+          example: catalog-spice-garden-001
+
+        catalogName:
+          type: string
+          description: Human-readable name of the catalog.
+          example: Spice Garden Menu
+
+        validity:
+          $ref: '#/components/schemas/Validity'
+
+        packingCharge:
+          type: number
+          description: Fixed packing charge added to every order (in `currency` units).
+          default: 0
+          example: 20
+
+        deliveryCharge:
+          type: number
+          description: Fixed delivery charge added to every order (in `currency` units).
+          default: 0
+          example: 40
+
+        gstRate:
+          type: number
+          description: GST rate as a decimal fraction (e.g. 0.05 for 5%).
+          default: 0
+          example: 0.05
+
+        currency:
+          type: string
+          description: ISO 4217 currency code.
+          default: INR
+          example: INR
+
+        serviceability:
+          $ref: '#/components/schemas/Serviceability'
+
+        timeRange:
+          $ref: '#/components/schemas/TimeRange'
+
+        holidays:
+          type: array
+          description: ISO 8601 date strings on which the store is closed.
+          items:
+            type: string
+            format: date
+          example: ["2026-01-26", "2026-08-15"]
+
+        policies:
+          $ref: '#/components/schemas/Policies'
+
+        paymentConstraints:
+          $ref: '#/components/schemas/PaymentConstraints'
+
+        isActive:
+          type: boolean
+          description: Whether the provider is currently active.
+          default: true
+          example: true
+
+    Validity:
+      type: object
+      required: [startDate, endDate]
+      properties:
+        startDate:
+          type: string
+          format: date-time
+          description: Catalog validity start (ISO 8601).
+          example: "2025-01-01T00:00:00Z"
+        endDate:
+          type: string
+          format: date-time
+          description: Catalog validity end (ISO 8601).
+          example: "2025-12-31T23:59:59Z"
+
+    Serviceability:
+      type: object
+      required: [maxDistance]
+      properties:
+        maxDistance:
+          type: number
+          description: Maximum delivery radius.
+          example: 10
+        unit:
+          type: string
+          description: Distance unit.
+          default: KM
+          enum: [KM, MILE]
+          example: KM
+        timing:
+          type: array
+          description: Operating schedule slots.
+          items:
+            $ref: '#/components/schemas/TimingSlot'
+
+    TimingSlot:
+      type: object
+      properties:
+        daysOfWeek:
+          type: array
+          description: Days this slot applies to.
+          items:
+            type: string
+            enum: [MON, TUE, WED, THU, FRI, SAT, SUN]
+          example: [MON, TUE, WED, THU, FRI, SAT, SUN]
+        timeRange:
+          $ref: '#/components/schemas/TimeRange'
+
+    TimeRange:
+      type: object
+      properties:
+        start:
+          type: string
+          description: Start time in HH:MM (24-hour) format.
+          example: "09:00"
+        end:
+          type: string
+          description: End time in HH:MM (24-hour) format.
+          example: "22:00"
+
+    Policies:
+      type: object
+      properties:
+        returns:
+          type: object
+          properties:
+            allowed:
+              type: boolean
+              default: false
+              example: false
+            window:
+              type: string
+              description: ISO 8601 duration within which returns are accepted.
+              example: P1D
+            method:
+              type: string
+              description: Return pickup method.
+              example: SELLER_PICKUP
+        cancellation:
+          type: object
+          properties:
+            allowed:
+              type: boolean
+              default: false
+              example: true
+            window:
+              type: string
+              description: ISO 8601 duration within which cancellation is allowed.
+              example: PT1H
+            cutoffEvent:
+              type: string
+              description: Event after which cancellation is no longer allowed.
+              enum: [BEFORE_PACKING, BEFORE_DISPATCH]
+              example: BEFORE_PACKING
+
+    PaymentConstraints:
+      type: object
+      properties:
+        codAvailable:
+          type: boolean
+          description: Whether cash-on-delivery is accepted.
+          default: false
+          example: true
+        paymentMethods:
+          type: array
+          description: Accepted payment methods.
+          items:
+            type: string
+            enum: [COD, UPI, PREPAID, CARD]
+          example: [COD, UPI, PREPAID]
+
+    AckResponse:
+      type: object
+      properties:
+        message:
+          type: object
+          properties:
+            ack:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [ACK]
+        providerId:
+          type: string
+          description: The providerId of the created/updated document.
+          example: provider-test-001
+
+    NackResponse:
+      type: object
+      properties:
+        message:
+          type: object
+          properties:
+            ack:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [NACK]
+        error:
+          type: string
+          description: Human-readable error detail.

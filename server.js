@@ -4,10 +4,17 @@ const path = require("path");
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
-const { connectDB, CatalogPublish, Order } = require("./db");
+const {
+  connectDB,
+  CatalogPublish,
+  Order,
+  Resource,
+  Provider,
+} = require("./db");
 const { handleSelect } = require("./handlers/select");
 const { handleInit } = require("./handlers/init");
 const { handleConfirm } = require("./handlers/confirm");
+const { handlePublish } = require("./handlers/publish");
 
 const app = express();
 app.use(cors({ origin: "*", methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"], allowedHeaders: "*" }));
@@ -15,6 +22,19 @@ app.options("*", cors());
 app.use(express.json());
 
 const PORT = 4001;
+
+// ---------------------------------------------------------------------------
+// Request logger middleware
+// ---------------------------------------------------------------------------
+app.use((req, _res, next) => {
+  const ts = new Date().toISOString();
+  const hasBody = req.body && Object.keys(req.body).length > 0;
+  console.log(`\n[${ts}] ${req.method} ${req.path}`);
+  if (hasBody) {
+    console.log("[payload]", JSON.stringify(req.body, null, 2));
+  }
+  next();
+});
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -216,6 +236,97 @@ app.post("/status", async (req, res) => {
   }
 });
 app.post("/track", makeHandler("track"));
+
+// ---------------------------------------------------------------------------
+// Resource (item) endpoints
+// ---------------------------------------------------------------------------
+app.post("/resources/add", async (req, res) => {
+  console.log("\n[resources] insert request:");
+  console.log(req.body);
+
+  const { resourceId } = req.body;
+  try {
+    const doc = await Resource.findOneAndUpdate(
+      { resourceId },
+      { $set: req.body },
+      {
+        upsert: true,
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    );
+    console.log(`[resources] stored resourceId=${doc.resourceId}`);
+    res.status(201).json({
+      message: { ack: { status: "ACK" } },
+      resourceId: doc.resourceId,
+    });
+  } catch (err) {
+    console.error("[resources] failed to store:", err.message);
+    res
+      .status(400)
+      .json({ message: { ack: { status: "NACK" } }, error: err.message });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Publish endpoint — builds catalog/publish payload then fires callback
+// ---------------------------------------------------------------------------
+app.post("/publish", async (req, res) => {
+  console.log("\n[publish] request payload:");
+  console.log(JSON.stringify(req.body, null, 2));
+
+  const { resourceIds, callbackUrl } = req.body;
+  if (!Array.isArray(resourceIds) || resourceIds.length === 0) {
+    return res.status(400).json({
+      message: { ack: { status: "NACK" } },
+      error: "resourceIds must be a non-empty array",
+    });
+  }
+
+  res.json(ACK);
+
+  const target =
+    callbackUrl ?? "http://localhost:8082/bpp/caller/catalog/publish";
+  try {
+    const payload = await handlePublish(resourceIds, target);
+    console.log("[publish] done, payload sent to", target);
+  } catch (err) {
+    console.error("[publish] failed:", err.message);
+  }
+});
+
+// ---------------------------------------------------------------------------
+// Publisher (store) endpoints
+// ---------------------------------------------------------------------------
+app.post("/provider/add", async (req, res) => {
+  console.log("\n[provider] insert request:");
+  console.log(req.body);
+
+  const { providerId } = req.body;
+  try {
+    const doc = await Provider.findOneAndUpdate(
+      { providerId },
+      { $set: req.body },
+      {
+        upsert: true,
+        new: true,
+        runValidators: true,
+        setDefaultsOnInsert: true,
+      },
+    );
+    console.log(`[provider] stored providerId=${doc.providerId}`);
+    res.status(201).json({
+      message: { ack: { status: "ACK" } },
+      providerId: doc.providerId,
+    });
+  } catch (err) {
+    console.error("[provider] failed to store:", err.message);
+    res
+      .status(400)
+      .json({ message: { ack: { status: "NACK" } }, error: err.message });
+  }
+});
 
 // ---------------------------------------------------------------------------
 // Catalog endpoints

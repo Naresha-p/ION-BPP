@@ -2,7 +2,16 @@
   "permissions": {
     "allow": [
       "Bash(dir:*)",
-      "Bash(xargs grep:*)"
+      "Bash(xargs grep:*)",
+      "Bash(ls C:/Users/vivek.mongare/Downloads/bpp-fnb-app/*.js)",
+      "Bash(findstr /V node_modules)",
+      "Bash(curl -s -X POST http://localhost:4001/provider/add -H 'Content-Type: application/json' -d '{:*)",
+      "Bash(curl:*)",
+      "Bash(node:*)",
+      "Bash(node test-apis.js)",
+      "Read(//tmp/**)",
+      "Bash(echo \"EXIT:$?\")",
+      "Bash(ping -n 1 localhost)"
     ]
   }
 }

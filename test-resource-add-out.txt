@@ -1,0 +1,2 @@
+STATUS:201
+{"message":{"ack":{"status":"ACK"}},"resourceId":"item-test-debug-001"}
