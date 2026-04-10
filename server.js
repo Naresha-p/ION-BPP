@@ -103,12 +103,37 @@ app.post("/catalog/publish", async (req, res) => {
   console.log("\n[catalog/publish] request payload:");
   console.log(JSON.stringify(req.body, null, 2));
 
+  // 1. Forward to fabric
+  let fabricResponse;
+  try {
+    fabricResponse = await axios.post(
+      "https://fabric.nfh.global/beckn/catalog/publish",
+      req.body,
+      { headers: { "Content-Type": "application/json" }, timeout: 15000 }
+    );
+    console.log(`[catalog/publish] fabric response status=${fabricResponse.status}`);
+    console.log("[catalog/publish] fabric response body:", JSON.stringify(fabricResponse.data, null, 2));
+  } catch (err) {
+    const status = err.response?.status ?? 502;
+    const body = err.response?.data ?? { error: err.message };
+    console.error(`[catalog/publish] fabric call failed: status=${status}`, body);
+    return res.status(status).json(body);
+  }
+
+  // 2. Check for ACK from fabric
+  const ackStatus = fabricResponse.data?.message?.ack?.status;
+  if (ackStatus !== "ACK") {
+    console.warn("[catalog/publish] fabric returned NACK — not storing");
+    return res.status(400).json(fabricResponse.data);
+  }
+
+  // 3. Store in MongoDB only on ACK
   try {
     const doc = await CatalogPublish.create(req.body);
     console.log(`[catalog/publish] stored document id=${doc._id}`);
-    res.status(200).json({ message: { ack: { status: "ACK" } }, id: doc._id });
+    res.status(200).json({ ...fabricResponse.data, id: doc._id });
   } catch (err) {
-    console.error("[catalog/publish] failed to store:", err.message);
+    console.error("[catalog/publish] failed to store in DB:", err.message);
     res.status(500).json({ message: { ack: { status: "NACK" } }, error: err.message });
   }
 });
