@@ -256,6 +256,19 @@ app.post("/catalog/publish", async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
+// Order endpoints
+// ---------------------------------------------------------------------------
+app.get("/orders", async (req, res) => {
+  try {
+    const orders = await Order.find({}).sort({ createdAt: -1 });
+    res.json({ orders });
+  } catch (err) {
+    console.error("[orders] failed to fetch:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------------------------------------------------------------------------
 // Health check
 // ---------------------------------------------------------------------------
 app.get("/health", (_req, res) =>
