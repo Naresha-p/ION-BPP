@@ -25,6 +25,7 @@
             "name": "Venky.Mahadevan@Bazaar"
           },
           "participantAttributes": {
+            "id": "provider-venky-bazaar",
             "@context": "https://raw.githubusercontent.com/beckn/schemas/main/schema/Provider/v2.1/context.jsonld",
             "@type": "Provider",
             "descriptor": {
@@ -43,8 +44,6 @@
             "@type": "Consumer",
             "role": "buyer",
             "person": {
-              "@context": "https://raw.githubusercontent.com/beckn/schemas/refs/heads/main/schema/Person/v2.0/context.jsonld",
-              "@type": "Person",
               "id": "buyer-motiur-rehman",
               "name": "Motiur Rehman",
               "email": "nc.rehman@gmail.com",
@@ -56,7 +55,10 @@
                 "postalCode": "560001",
                 "addressCountry": "IN"
               },
-              "knowsLanguage": ["en", "hi"]
+              "knowsLanguage": [
+                "en",
+                "hi"
+              ]
             }
           }
         }
@@ -83,14 +85,14 @@
                   "originCountry": "IN"
                 },
                 "physical": {
-                  "weight": {
-                    "value": 350,
-                    "unit": "G"
-                  },
-                  "volume": {
-                    "value": 500,
-                    "unit": "ML"
-                  },
+                                                    "weight": {
+                                        "unitQuantity": 350,
+                                        "unitCode": "G"
+                                    },
+                                    "volume": {
+                                        "unitQuantity": 500,
+                                        "unitCode": "ML"
+                                    },
                   "appearance": {
                     "color": "Yellow",
                     "material": "Stainless Steel",
@@ -105,8 +107,8 @@
                   },
                   "commonOrGenericName": "Stainless Steel Vacuum Flask",
                   "netQuantity": {
-                    "value": 500,
-                    "unit": "ML"
+                    "unitQuantity": 500,
+                    "unitCode": "ML"
                   }
                 }
               }
@@ -114,7 +116,9 @@
           ],
           "offer": {
             "id": "offer-flask-mh500-yellow",
-            "resourceIds": ["item-flask-mh500-yellow"],
+            "resourceIds": [
+              "item-flask-mh500-yellow"
+            ],
             "descriptor": {
               "name": "Isothermal Stainless Steel Hiking Flask MH500 Yellow - Water bottle"
             },
@@ -182,7 +186,11 @@
                 "type": "TAX"
               }
             ],
-            "paymentMethods": ["PREPAID", "COD", "UPI"]
+            "paymentMethods": [
+              "PREPAID",
+              "COD",
+              "UPI"
+            ]
           }
         }
       ],
@@ -192,11 +200,15 @@
           "status": {
             "code": "EN_ROUTE"
           },
-          "commitmentIds": ["commitment-flask-001"],
+          "commitmentIds": [
+            "commitment-flask-001"
+          ],
           "performanceAttributes": {
             "@context": "https://raw.githubusercontent.com/beckn/local-retail/refs/heads/main/schema/RetailPerformance/v2.1/context.jsonld",
-            "@type": "PerformanceAttributes",
-            "supportedPerformanceModes": ["DELIVERY"],
+            "@type": "rcpa:RetailPerformance",
+            "supportedPerformanceModes": [
+              "DELIVERY"
+            ],
             "deliveryDetails": {
               "address": {
                 "streetAddress": "123, Terminal 1, Kempegowda Int'l Airport Rd, A - Block",
@@ -215,10 +227,19 @@
               "max": "PT4H",
               "unitBasis": "ORDER_CONFIRMATION"
             },
-            "handling": ["FRAGILE"],
+            "handling": [
+              "FRAGILE"
+            ],
             "operatingHours": [
               {
-                "daysOfWeek": [1, 2, 3, 4, 5, 6],
+                "daysOfWeek": [
+                  1,
+                  2,
+                  3,
+                  4,
+                  5,
+                  6
+                ],
                 "timeRange": {
                   "start": "09:00",
                   "end": "21:00"
@@ -253,7 +274,7 @@
       ],
       "contractAttributes": {
         "@context": "https://raw.githubusercontent.com/beckn/local-retail/refs/heads/main/schema/RetailContract/v2.1/context.jsonld",
-        "@type": "ContractAttributes",
+        "@type": "rcca:RetailContract",
         "buyerInstructions": "Please handle with care",
         "deliveryPreferences": {
           "leaveAtDoor": false,

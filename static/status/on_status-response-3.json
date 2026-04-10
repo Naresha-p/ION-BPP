@@ -25,6 +25,7 @@
             "name": "Venky.Mahadevan@Bazaar"
           },
           "participantAttributes": {
+		  "id": "provider-venky-bazaar",
             "@context": "https://raw.githubusercontent.com/beckn/schemas/main/schema/Provider/v2.1/context.jsonld",
             "@type": "Provider",
             "descriptor": {
@@ -43,8 +44,6 @@
             "@type": "Consumer",
             "role": "buyer",
             "person": {
-              "@context": "https://raw.githubusercontent.com/beckn/schemas/refs/heads/main/schema/Person/v2.0/context.jsonld",
-              "@type": "Person",
               "id": "buyer-motiur-rehman",
               "name": "Motiur Rehman",
               "email": "nc.rehman@gmail.com",
@@ -83,15 +82,15 @@
                   "originCountry": "IN"
                 },
                 "physical": {
-                  "weight": {
-                    "value": 350,
-                    "unit": "G"
-                  },
-                  "volume": {
-                    "value": 500,
-                    "unit": "ML"
-                  },
-                  "appearance": {
+                   "weight": {
+                                        "unitQuantity": 350,
+                                        "unitCode": "G"
+                                    },
+                                    "volume": {
+                                        "unitQuantity": 500,
+                                        "unitCode": "ML"
+                                    },
+			"appearance": {
                     "color": "Yellow",
                     "material": "Stainless Steel",
                     "finish": "Matte"
@@ -104,11 +103,11 @@
                     "address": "Bangalore, Karnataka, IN"
                   },
                   "commonOrGenericName": "Stainless Steel Vacuum Flask",
-                  "netQuantity": {
-                    "value": 500,
-                    "unit": "ML"
+               "netQuantity": {
+                    "unitQuantity": 500,
+                    "unitCode": "ML"
                   }
-                }
+	       	}
               }
             }
           ],
@@ -232,8 +231,8 @@
           "commitmentIds": ["commitment-flask-001"],
           "performanceAttributes": {
             "@context": "https://raw.githubusercontent.com/beckn/local-retail/refs/heads/main/schema/RetailPerformance/v2.1/context.jsonld",
-            "@type": "PerformanceAttributes",
-            "supportedPerformanceModes": ["DELIVERY"],
+            "@type": "rcpa:RetailPerformance",
+	    "supportedPerformanceModes": ["DELIVERY"],
             "deliveryDetails": {
               "address": {
                 "streetAddress": "123, Terminal 1, Kempegowda Int'l Airport Rd, A - Block",
@@ -290,7 +289,7 @@
       ],
       "contractAttributes": {
         "@context": "https://raw.githubusercontent.com/beckn/local-retail/refs/heads/main/schema/RetailContract/v2.1/context.jsonld",
-        "@type": "ContractAttributes",
+        "@type": "rcca:RetailContract",
         "buyerInstructions": "Please handle with care",
         "deliveryPreferences": {
           "leaveAtDoor": false,

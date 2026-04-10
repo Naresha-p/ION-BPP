@@ -168,7 +168,35 @@ app.post("/confirm", async (req, res) => {
   console.log("[confirm] firing callback →", callbackUrl);
   await sendCallback(callbackUrl, payload);
 });
-app.post("/status", makeHandler("status"));
+//app.post("/status", makeHandler("status"));
+app.post("/status", async (req, res) => {
+  console.log("\n[status] request payload:");
+  console.log(JSON.stringify(req.body, null, 2));
+
+  console.log("[status] sending ACK:", JSON.stringify(ACK));
+  res.json(ACK);
+
+  const callbackUrl = "http://localhost:8082/bpp/caller/on_status";
+  const context = req.body?.context ?? {};
+
+  for (let i = 1; i <= 3; i++) {
+    let payload;
+    try {
+      // Clear require cache so edits are picked up between restarts
+      const filePath = path.join(__dirname, "static", "status", `on_status-response-${i}.json`);
+      delete require.cache[require.resolve(filePath)];
+      const staticData = require(filePath);
+      payload = { ...staticData, context: buildContext(context, "status") };
+    } catch (err) {
+      console.error(`[status] failed to load on_status-response-${i}: ${err.message}`);
+      break;
+    }
+
+    await delay(i === 1 ? 2000 : 5000);
+    console.log(`[status] firing callback ${i}/3 → ${callbackUrl}`);
+    await sendCallback(callbackUrl, payload);
+  }
+});
 app.post("/track", makeHandler("track"));
 
 // ---------------------------------------------------------------------------
