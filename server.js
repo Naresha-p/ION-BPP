@@ -274,6 +274,32 @@ app.post("/catalog/publish", async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
+// Product endpoints
+// ---------------------------------------------------------------------------
+app.delete("/products/:itemId", async (req, res) => {
+  const { itemId } = req.params;
+  try {
+    // Remove the item from the items array in any matching doc
+    const result = await CatalogPublish.updateMany(
+      { "items.id": itemId },
+      { $pull: { items: { id: itemId } } }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: `Item ${itemId} not found` });
+    }
+
+    // Delete any docs whose items array is now empty
+    await CatalogPublish.deleteMany({ items: { $size: 0 } });
+
+    res.json({ message: `Item ${itemId} deleted` });
+  } catch (err) {
+    console.error("[products] delete failed:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------------------------------------------------------------------------
 // Order endpoints
 // ---------------------------------------------------------------------------
 app.get("/orders", async (req, res) => {
