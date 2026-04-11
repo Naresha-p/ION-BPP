@@ -385,6 +385,35 @@ app.post("/catalog/publish", async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
+// Provider endpoints
+// ---------------------------------------------------------------------------
+app.get("/providers", async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 10));
+    const skip = (page - 1) * limit;
+
+    const [providers, total] = await Promise.all([
+      Provider.find({}).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Provider.countDocuments(),
+    ]);
+
+    res.json({
+      providers,
+      pagination: {
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      },
+    });
+  } catch (err) {
+    console.error("[providers] failed to fetch:", err.message);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// ---------------------------------------------------------------------------
 // Product (resource) endpoints
 // ---------------------------------------------------------------------------
 app.get("/products", async (req, res) => {
