@@ -97,7 +97,7 @@ async function handleSelect(body) {
         offer?.offerAttributes?.price?.currency ??
         resource?.currency ??
         resource?.price?.currency ??
-        "INR";
+        "RP";
       const qty = Number(c.commitmentAttributes?.quantity?.unitQuantity ?? 1);
       const lineTotal = Math.round(unitPrice * qty * 100) / 100;
       subtotal += lineTotal;
