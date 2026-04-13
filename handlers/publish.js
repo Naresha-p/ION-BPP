@@ -95,9 +95,18 @@ function buildPublishPayload(provider, resources) {
             provider.serviceability?.unit ??
             "KM",
         },
-        timing:
-          r.offerAttributes?.serviceability?.timing ??
-          provider.serviceability?.timing,
+        // timing:
+        //   r.offerAttributes?.serviceability?.timing ??
+        //   provider.serviceability?.timing,
+        timing: [
+          {
+            daysOfWeek: ["MON", "TUE", "WED", "THU", "FRI", "SAT"],
+            timeRange: {
+              start: "08:00",
+              end: "21:00",
+            },
+          },
+        ],
       },
       timeRange: r.offerAttributes?.timeRange ?? provider.timeRange,
       holidays: r.offerAttributes?.holidays ?? provider.holidays,
