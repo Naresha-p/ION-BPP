@@ -40,8 +40,11 @@ function buildPublishPayload(provider, resources) {
         },
         physical: {
           weight: {
-            value: r.resourceAttributes.weight?.unitQuantity,
-            unit: r.resourceAttributes.weight?.unitCode === "GRAM" ? "G" : r.resourceAttributes.weight?.unitCode,
+            unitQuantity: r.resourceAttributes.weight?.unitQuantity,
+            unitCode:
+              r.resourceAttributes.weight?.unitCode === "GRAM"
+                ? "G"
+                : r.resourceAttributes.weight?.unitCode,
           },
         },
       },
