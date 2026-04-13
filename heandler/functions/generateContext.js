@@ -18,7 +18,7 @@ function generateContext(
     bppId: bppId,
     bppUri: bppUri,
     ttl: "PT10M",
-    networkId: "beckn.one/testnet",
+    networkId: "ion.id/ion-winroom-0426",
   };
 }
 module.exports = { generateContext };
