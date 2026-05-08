@@ -284,21 +284,34 @@ app.post("/publish", async (req, res) => {
     });
   }
 
-  res.json(ACK);
-
   const target =
     callbackUrl ?? "http://localhost:8082/bpp/caller/catalog/publish";
   try {
     const payload = await handlePublish(resourceIds, target);
     console.log("[publish] done, payload sent to", target);
+    res.json(ACK);
   } catch (err) {
     console.error("[publish] failed:", err.message);
+    res.status(400).json({
+      message: { ack: { status: "NACK" } },
+      error: err.message,
+    });
   }
 });
 
 // ---------------------------------------------------------------------------
 // Publisher (store) endpoints
 // ---------------------------------------------------------------------------
+app.get("/providers", async (req, res) => {
+  try {
+    const providers = await Provider.find({}).lean();
+    res.json({ message: { ack: { status: "ACK" } }, providers });
+  } catch (err) {
+    console.error("[providers] failed to fetch:", err.message);
+    res.status(500).json({ message: { ack: { status: "NACK" } }, error: err.message });
+  }
+});
+
 app.post("/provider/add", async (req, res) => {
   console.log("\n[provider] insert request:");
   console.log(req.body);

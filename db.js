@@ -150,6 +150,8 @@ const providerSchema = new mongoose.Schema(
     name: { type: String, required: true },
     shortDesc: { type: String, required: true },
     city: { type: String, required: true }, // e.g. "ONDC:std:city:Mumbai"
+    bapId: { type: String, required: true },
+    bapUri: { type: String, required: true },
     bppId: { type: String, required: true },
     bppUri: { type: String, required: true },
 
